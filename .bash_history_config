@@ -1,0 +1,19 @@
+# Per-tmux-window bash history
+if [[ -n "$TMUX" ]] && [[ -n "$TMUX_PANE" ]]; then
+  # Ask tmux specifically about THIS pane's window, not the currently
+  # focused one. Without -t, tmux-resurrect restores collide because all
+  # shells spawn while the same window is "active".
+  _win=$(tmux display-message -p -t "$TMUX_PANE" '#W')
+
+  # Sanitize: window names can contain spaces, slashes, etc.
+  _win="${_win//[^A-Za-z0-9_.-]/_}"
+  : "${_win:=default}"
+
+  mkdir -p "$HOME/.bash_histories"
+  HISTFILE="$HOME/.bash_histories/${_win}"
+  HISTSIZE=100000
+  HISTFILESIZE=100000
+
+  unset _win
+fi
+PROMPT_COMMAND="history -a; ${PROMPT_COMMAND}"
